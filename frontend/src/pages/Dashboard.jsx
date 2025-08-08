@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FiMenu, FiX, FiChevronDown } from 'react-icons/fi';
 import Sidebar from '../components/Sidebar';// Assuming Sidebar.js is in the same directory or a components folder
 import ManageUsersPage from '../components/ManageUser';
+import { useAuth } from '../context/AuthProvider';
 
 // --- Main Dashboard Layout ---
 
@@ -25,7 +26,8 @@ const navItems = [
 ];
 
 export default function DashboardLayout() {
-    const [role, setRole] = useState(ROLES.ADMIN);
+    const { user } = useAuth();
+    const role = user?.role || 'Admin'; // fallback if not logged in
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [activePage, setActivePage] = useState('Dashboard');
 
