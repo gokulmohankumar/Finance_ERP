@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 import { FiEye, FiEyeOff } from 'react-icons/fi'; // Icon for password visibility
 import { motion } from 'framer-motion'; // For animations
 import loginimg from '../assets/bg_home.jpg';
-import axios from 'axios';
+
 // IMPORTANT: Make sure to place your illustration in the src/assets folder
 // and update the import path if necessary.
-
+import axios from 'axios'
 
 // A custom reusable component for the animated toggle switch
 const ToggleSwitch = ({ checked, onChange }) => {
@@ -70,6 +70,8 @@ function LoginPage() {
     e.preventDefault();
     // Handle form submission logic here
     try{
+      console.log(email+" "+password);
+      
         const response = await axios.post('http://localhost:8080/api/users/login',{
             email,
             password,

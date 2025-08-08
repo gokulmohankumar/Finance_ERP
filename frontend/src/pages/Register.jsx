@@ -5,7 +5,7 @@ import axios from 'axios';
 
 function RegisterPage() {
   const [username, setUsername] = useState('');
-  const [mobilenumber, setMobilenumber] = useState('');
+  const [phoneNumber, setphoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('manager');
   const [password, setPassword] = useState('');
@@ -48,12 +48,12 @@ function RegisterPage() {
     try {
       const response = await axios.post('http://localhost:8080/api/users/register', {
         username,
-        mobilenumber,
+        phoneNumber,
         email,
         role,
         password,
       });
-      if (response.data === 'registered') {
+      if (response.data.username === username) {
         alert('Registration successful!');
       } else {
         alert('Registration failed. Please try again.');
@@ -118,8 +118,8 @@ function RegisterPage() {
                 <input
                   type="tel"
                   placeholder="Mobile Number"
-                  value={mobilenumber}
-                  onChange={(e) => setMobilenumber(e.target.value)}
+                  value={phoneNumber}
+                  onChange={(e) => setphoneNumber(e.target.value)}
                   className="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
                   required
                 />
