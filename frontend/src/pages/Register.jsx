@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import registerImg from '../assets/bg_home.jpg'; // Use the same image as login
+import registerImg from '../assets/bg_home.jpg';
+import axios from 'axios';
 
 function RegisterPage() {
   const [username, setUsername] = useState('');
   const [mobilenumber, setMobilenumber] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('manager');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordMatch, setPasswordMatch] = useState(true);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -25,24 +29,38 @@ function RegisterPage() {
     },
   };
 
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    setPasswordMatch(e.target.value === confirmPassword);
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    setConfirmPassword(e.target.value);
+    setPasswordMatch(password === e.target.value);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle registration logic here
-    try{
-        const response = await axios.post('http://localhost:8080/api/users/register', {
-            username,
-            mobilenumber,
-            email,
-            role,
-        });
-        if(response.data === 'registered'){
-            alert('Registration successful!');
-        } else{
-            alert('Registration failed. Please try again.');
-        }
-    } catch(error){
-        alert('An error occurred during registration. Please try again later.');
-        console.error('Registration error:', error);
+    if (!passwordMatch) {
+      alert('Passwords do not match.');
+      return;
+    }
+    try {
+      const response = await axios.post('http://localhost:8080/api/users/register', {
+        username,
+        mobilenumber,
+        email,
+        role,
+        password,
+      });
+      if (response.data === 'registered') {
+        alert('Registration successful!');
+      } else {
+        alert('Registration failed. Please try again.');
+      }
+    } catch (error) {
+      alert('An error occurred during registration. Please try again later.');
+      console.error('Registration error:', error);
     }
   };
 
@@ -130,6 +148,36 @@ function RegisterPage() {
                   <option value="manager">Manager</option>
                   <option value="accountant">Accountant</option>
                 </select>
+              </motion.div>
+
+              {/* Password Input */}
+              <motion.div variants={itemVariants}>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  className="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
+                  required
+                />
+              </motion.div>
+
+              {/* Confirm Password Input */}
+              <motion.div variants={itemVariants}>
+                <input
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={handleConfirmPasswordChange}
+                  className="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
+                  required
+                />
+                {!passwordMatch && (
+                  <span className="text-red-500 text-sm">Passwords do not match.</span>
+                )}
+                {password && confirmPassword && passwordMatch && (
+                  <span className="text-green-600 text-sm">Passwords match.</span>
+                )}
               </motion.div>
 
               {/* Register Button */}
