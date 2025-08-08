@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import registerImg from '../assets/bg_home.jpg';
 import axios from 'axios';
+import { Navigate } from 'react-router-dom';
 
 function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -55,6 +56,7 @@ function RegisterPage() {
       });
       if (response.data === 'registered') {
         alert('Registration successful!');
+        Navigate('/login');
       } else {
         alert('Registration failed. Please try again.');
       }
