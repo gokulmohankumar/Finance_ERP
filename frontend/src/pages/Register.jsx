@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import registerImg from '../assets/bg_home.jpg';
 import axios from 'axios';
 
+import {useNavigate} from 'react-router-dom'
 function RegisterPage() {
   const [username, setUsername] = useState('');
   const [phoneNumber, setphoneNumber] = useState('');
@@ -11,6 +12,10 @@ function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordMatch, setPasswordMatch] = useState(true);
+
+
+  
+    const navigate = useNavigate();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -55,6 +60,7 @@ function RegisterPage() {
       });
       if (response.data.username === username) {
         alert('Registration successful!');
+        navigate('/login');
       } else {
         alert('Registration failed. Please try again.');
       }
