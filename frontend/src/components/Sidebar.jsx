@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     FiHome, FiUsers, FiBriefcase, FiFileText, FiDollarSign, 
-    FiTrendingUp, FiSettings, FiLogOut, FiChevronDown, FiMenu, FiX 
+    FiTrendingUp, FiSettings, FiLogOut
 } from 'react-icons/fi';
 
-// --- Role-based SVG Profile Icons ---
+// --- Constants and SVG Icons (could be in a separate config file) ---
+
+const ROLES = {
+    ADMIN: 'Admin',
+    FINANCE_MANAGER: 'Finance Manager',
+    ACCOUNTANT: 'Accountant',
+};
+
 const AdminIcon = () => (
     <svg viewBox="0 0 100 100" className="w-full h-full">
         <circle cx="50" cy="50" r="45" className="fill-emerald-100" />
@@ -30,13 +37,6 @@ const AccountantIcon = () => (
     </svg>
 );
 
-// --- Role Configuration ---
-const ROLES = {
-    ADMIN: 'Admin',
-    FINANCE_MANAGER: 'Finance Manager',
-    ACCOUNTANT: 'Accountant',
-};
-
 const USER_PROFILES = {
     [ROLES.ADMIN]: { name: 'Admin User', icon: <AdminIcon /> },
     [ROLES.FINANCE_MANAGER]: { name: 'Manager User', icon: <ManagerIcon /> },
@@ -54,25 +54,22 @@ const navItems = [
 ];
 
 // --- Sidebar Component ---
-const Sidebar = ({ role, isSidebarOpen, setSidebarOpen }) => {
-    const [activeItem, setActiveItem] = useState('dashboard');
+export default function Sidebar({ role, isSidebarOpen, setSidebarOpen, activePage, setActivePage }) {
     const userProfile = USER_PROFILES[role];
-
     const filteredNavItems = navItems.filter(item => item.roles.includes(role));
 
     return (
         <>
             <AnimatePresence>
                 {isSidebarOpen && (
-                    <motion.div
+                     <motion.aside
                         initial={{ x: '-100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '-100%' }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        className="fixed top-0 left-0 h-full w-64 bg-slate-800 text-white flex flex-col z-50 md:relative md:translate-x-0"
+                        className="fixed top-0 left-0 h-screen w-64 bg-slate-800 text-white flex flex-col z-50 md:sticky md:translate-x-0"
                     >
-                        {/* Logo and Profile */}
-                        <div className="p-6 flex flex-col items-center border-b border-slate-700">
+                        <div className="p-6 flex flex-col items-center border-b border-slate-700 flex-shrink-0">
                              <div className="text-2xl font-bold text-white mb-4">
                                 Financier<span className="text-emerald-400">ERP</span>
                             </div>
@@ -83,18 +80,17 @@ const Sidebar = ({ role, isSidebarOpen, setSidebarOpen }) => {
                             <p className="text-sm text-slate-400">{role}</p>
                         </div>
 
-                        {/* Navigation */}
                         <nav className="flex-1 px-4 py-6 space-y-2">
                             {filteredNavItems.map(item => (
                                 <a
                                     key={item.id}
                                     href="#"
                                     onClick={() => {
-                                        setActiveItem(item.id);
+                                        setActivePage(item.label);
                                         if (window.innerWidth < 768) setSidebarOpen(false);
                                     }}
                                     className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
-                                        activeItem === item.id 
+                                        activePage === item.label
                                         ? 'bg-emerald-500 text-white shadow-lg' 
                                         : 'text-slate-300 hover:bg-slate-700'
                                     }`}
@@ -105,8 +101,7 @@ const Sidebar = ({ role, isSidebarOpen, setSidebarOpen }) => {
                             ))}
                         </nav>
 
-                        {/* Footer */}
-                        <div className="p-4 border-t border-slate-700">
+                        <div className="p-4 border-t border-slate-700 mt-auto flex-shrink-0">
                              <a href="#" className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700">
                                 <FiSettings className="w-5 h-5" />
                                 <span>Settings</span>
@@ -116,13 +111,10 @@ const Sidebar = ({ role, isSidebarOpen, setSidebarOpen }) => {
                                 <span>Logout</span>
                             </a>
                         </div>
-                    </motion.div>
+                    </motion.aside>
                 )}
             </AnimatePresence>
              {isSidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/50 z-40 md:hidden"></div>}
         </>
     );
 };
-export default Sidebar;
-
-// --- Main Dashboard Layout ---
