@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { FiEye, FiEyeOff } from 'react-icons/fi'; // Icon for password visibility
 import { motion } from 'framer-motion'; // For animations
-
+import loginimg from '../assets/bg_home.jpg';
 // IMPORTANT: Make sure to place your illustration in the src/assets folder
 // and update the import path if necessary.
 
@@ -65,29 +65,39 @@ function LoginPage() {
     },
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Handle form submission logic here
-    console.log({
-      email,
-      password,
-      rememberMe,
-    });
-    alert('Login form submitted! Check the console for data.');
+    try{
+        const response = await axios.post('http://localhost:8080/api/users/login',{
+            email,
+            password,
+        });
+        console.log(response.data);
+        alert('Login Successful!');
+    }catch(error){
+        alert("Login Failed! Please check your credentials.");
+        console.error('Login error:', error);
+    }
   };
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen font-sans">
       
-      {/* Left Side: Illustration and Gradient Background */}
-      <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-green-400 to-green-700 items-center justify-center p-12">
+      {/* Left Side: Full Background Image (Flipped) */}
+      <div className="hidden md:flex md:w-1/2 items-center justify-center p-0">
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="w-full h-full"
         >
-          {/* Ensure the path to your illustration is correct */}
-
+          <img
+            src={loginimg}
+            alt="Home Illustration"
+            className="w-full h-full object-cover"
+            style={{ transform: 'scaleX(-1)' }} // Flip the image horizontally
+          />
         </motion.div>
       </div>
 
@@ -103,7 +113,7 @@ function LoginPage() {
             {/* Welcome Text */}
             <motion.div variants={itemVariants}>
               <h2 className="text-2xl font-semibold text-gray-600">Welcome back!</h2>
-              <h1 className="text-4xl font-bold text-gray-800">Bangla Market</h1>
+              <h1 className="text-4xl font-bold text-gray-800">Finance ERP</h1>
               <p className="text-gray-500 mt-2">Nice to see you again!</p>
             </motion.div>
 
@@ -168,7 +178,7 @@ function LoginPage() {
             {/* Sign Up Link */}
             <motion.p variants={itemVariants} className="text-center text-sm text-gray-500">
               Don't have an account?{' '}
-              <a href="#" className="font-semibold text-green-600 hover:underline">
+              <a href="/register" className="font-semibold text-green-600 hover:underline">
                 Get Started
               </a>
             </motion.p>
