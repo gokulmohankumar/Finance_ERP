@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { FiEye, FiEyeOff } from 'react-icons/fi'; // Icon for password visibility
 import { motion } from 'framer-motion'; // For animations
 import loginimg from '../assets/bg_home.jpg';
+import axios from 'axios';
 // IMPORTANT: Make sure to place your illustration in the src/assets folder
 // and update the import path if necessary.
 

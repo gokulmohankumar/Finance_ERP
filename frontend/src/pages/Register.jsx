@@ -25,16 +25,25 @@ function RegisterPage() {
     },
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Handle registration logic here
-    console.log({
-      username,
-      mobilenumber,
-      email,
-      role,
-    });
-    alert('Registration form submitted! Check the console for data.');
+    try{
+        const response = await axios.post('http://localhost:8080/api/users/register', {
+            username,
+            mobilenumber,
+            email,
+            role,
+        });
+        if(response.data === 'registered'){
+            alert('Registration successful!');
+        } else{
+            alert('Registration failed. Please try again.');
+        }
+    } catch(error){
+        alert('An error occurred during registration. Please try again later.');
+        console.error('Registration error:', error);
+    }
   };
 
   return (
