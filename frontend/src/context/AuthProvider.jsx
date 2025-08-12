@@ -1,28 +1,48 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
-    // In a real app, you'd initialize this from localStorage
-    const [user, setUser] = useState(null); 
+export function AuthProvider({ children }) {
+  // Initialize state by reading from localStorage. This runs only once on initial load.
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error);
+      return null;
+    }
+  });
 
-    // login function would call your API, get a token, decode it, and setUser
-    const login = (userData) => {
-        // This is where you'd set the user data after a successful API call
-        setUser({ role: userData.role, name: userData.username }); 
-        localStorage.setItem('authToken', userData.token);
-    };
+  // This effect runs whenever the 'user' state changes.
+  useEffect(() => {
+    if (user) {
+      // If user logs in, save their data to localStorage.
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      // If user logs out, remove their data from localStorage.
+      localStorage.removeItem('user');
+    }
+  }, [user]); // The dependency array ensures this effect runs only when 'user' changes.
 
-    const logout = () => {
-        setUser(null);
-        localStorage.removeItem('authToken');
-    };
+  const login = (userData) => {
+    console.log("AuthProvider login function called with:", userData);
+    // Set the user state. The useEffect above will handle saving it to localStorage.
+    setUser(userData);
+  };
 
-    return (
-        <AuthContext.Provider value={{ user, login, logout }}>
-            {children}
-        </AuthContext.Provider>
-    );
-};
+  const logout = () => {
+    // Clear the user state. The useEffect will handle removing it from localStorage.
+    setUser(null);
+  };
 
-export const useAuth = () => useContext(AuthContext);
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  return useContext(AuthContext);
+}

@@ -23,7 +23,18 @@ public class User {
     private String phoneNumber;
 
     @Column(nullable = false)
-    private String role; // Example: ADMIN, MANAGER, ACCOUNTANT
+    private String role;// Example: ADMIN, MANAGER, ACCOUNTANT
+
+    @Column(nullable = false , columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean activeUser;
+
+    public boolean isActiveUser() {
+        return activeUser;
+    }
+
+    public void setActiveUser(boolean activeUser) {
+        this.activeUser = activeUser;
+    }
 
     public Long getId() {
         return id;
