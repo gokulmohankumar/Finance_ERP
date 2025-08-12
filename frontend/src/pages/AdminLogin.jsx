@@ -5,10 +5,10 @@ import { useState } from 'react';
 import { FiEye, FiEyeOff } from 'react-icons/fi'; // Icon for password visibility
 import loginimg from '../assets/bg_home.jpg';
 
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom'
 // IMPORTANT: Make sure to place your illustration in the src/assets folder
 // and update the import path if necessary.
-import axios from 'axios';
+import axios from 'axios'
 
 // A custom reusable component for the animated toggle switch
 const ToggleSwitch = ({ checked, onChange }) => {
@@ -47,8 +47,7 @@ function LoginPage() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
-  const navigate=useNavigate()
+
   // Animation variants for Framer Motion
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -69,11 +68,13 @@ function LoginPage() {
     },
   };
 
+  // --- Modified submit handler ---
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    try{
-      console.log(email+" "+password);
+    setError(''); // Clear previous errors
+
+    try {
+      console.log("Attempting to log in with:", email);
       
         const response = await axios.post('http://localhost:8080/api/users/login',{
             email,
@@ -81,18 +82,15 @@ function LoginPage() {
         });
         console.log(response.data);
         alert('Login Successful!');
-        navigate('/dashboard')
-        
     }catch(error){
         alert("Login Failed! Please check your credentials.");
         console.error('Login error:', error);
     }
   };
-
   return (
     <div className="flex flex-col md:flex-row min-h-screen font-sans">
       
-      {/* Left Side: Full Background Image (Flipped) */}
+      {/* Left Side: Full Background Image (Flipped) - NO CHANGES HERE */}
       <div className="hidden md:flex md:w-1/2 items-center justify-center p-0">
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
@@ -109,7 +107,7 @@ function LoginPage() {
         </motion.div>
       </div>
 
-      {/* Right Side: Login Form */}
+      {/* Right Side: Login Form - NO DESIGN CHANGES HERE */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200 p-8 md:p-16">
         <div className="w-full max-w-md">
           <motion.div
@@ -127,7 +125,7 @@ function LoginPage() {
 
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email Input */}
+              {/* Email and Password Inputs */}
               <motion.div variants={itemVariants}>
                 <input
                   type="email"
@@ -138,8 +136,6 @@ function LoginPage() {
                   required
                 />
               </motion.div>
-
-              {/* Password Input */}
               <motion.div variants={itemVariants} className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -157,6 +153,13 @@ function LoginPage() {
                   {showPassword ? <FiEyeOff /> : <FiEye />}
                 </button>
               </motion.div>
+
+              {/* 8. ADDED A PLACE TO SHOW THE ERROR MESSAGE */}
+              {error && (
+                <motion.p variants={itemVariants} className="text-sm text-center text-red-500 font-semibold">
+                  {error}
+                </motion.p>
+              )}
 
               {/* Remember Me & Forgot Password */}
               <motion.div variants={itemVariants} className="flex items-center justify-between">

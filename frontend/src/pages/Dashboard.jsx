@@ -1,48 +1,105 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiMenu, FiX, FiChevronDown } from 'react-icons/fi';
-import Sidebar from '../components/Sidebar';// Assuming Sidebar.js is in the same directory or a components folder
-import ManageUsersPage from '../components/ManageUser';
+import { FiMenu, FiX, FiLogOut } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { 
+    FiHome, 
+    FiUsers, 
+    FiFileText, 
+    FiDollarSign, 
+    FiBriefcase, 
+    FiTrendingUp, 
+    FiCreditCard 
+} from 'react-icons/fi';
+
 import { useAuth } from '../context/AuthProvider';
+import Sidebar from '../components/Sidebar';
+import ManageUsersPage from '../components/ManageUser';
+import ExpenseTracker from './ExpenseTracker';
 
-// --- Main Dashboard Layout ---
-
-// You would typically define ROLES and navItems in a shared config file
-// and import them here and in Sidebar.js to avoid duplication.
+// Define roles to EXACTLY match the strings from your backend API
 const ROLES = {
-    ADMIN: 'Admin',
-    FINANCE_MANAGER: 'Finance Manager',
-    ACCOUNTANT: 'Accountant',
+  ADMIN: 'admin',
+  MANAGER: 'manager',
+  ACCOUNTANT: 'accountant'
 };
 
-const navItems = [
-    { id: 'dashboard', label: 'Dashboard', roles: [ROLES.ADMIN, ROLES.FINANCE_MANAGER, ROLES.ACCOUNTANT] },
-    { id: 'users', label: 'Manage Users', roles: [ROLES.ADMIN] },
-    { id: 'customers', label: 'Customers/Vendors', roles: [ROLES.ADMIN, ROLES.FINANCE_MANAGER, ROLES.ACCOUNTANT] },
-    { id: 'invoices', label: 'Invoices', roles: [ROLES.ADMIN, ROLES.FINANCE_MANAGER, ROLES.ACCOUNTANT] },
-    { id: 'payments', label: 'Payments', roles: [ROLES.ADMIN, ROLES.FINANCE_MANAGER, ROLES.ACCOUNTANT] },
-    { id: 'expenses', label: 'Expenses', roles: [ROLES.ADMIN, ROLES.FINANCE_MANAGER] },
-    { id: 'reports', label: 'Reports', roles: [ROLES.ADMIN, ROLES.FINANCE_MANAGER] },
+// This list defines all possible navigation items and their required roles
+const allNavItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: FiHome, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.ACCOUNTANT] },
+    { id: 'users', label: 'Manage Users', icon: FiUsers, roles: [ROLES.ADMIN] },
+    { id: 'customers', label: 'Customers/Vendors', icon: FiBriefcase, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.ACCOUNTANT] },
+    { id: 'invoices', label: 'Invoices', icon: FiFileText, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.ACCOUNTANT] },
+    { id: 'payments', label: 'Payments', icon: FiDollarSign, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.ACCOUNTANT] },
+    { id: 'expenses', label: 'Expenses', icon: FiCreditCard, roles: [ROLES.ADMIN, ROLES.MANAGER,ROLES.ACCOUNTANT] },
+    { id: 'reports', label: 'Reports', icon: FiTrendingUp, roles: [ROLES.ADMIN, ROLES.MANAGER] },
 ];
 
 export default function DashboardLayout() {
-    const { user } = useAuth();
-    const role = user?.role || 'Admin'; // fallback if not logged in
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const role = user?.role || 'Guest';
+
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [activePage, setActivePage] = useState('Dashboard');
 
-    // When role changes, reset active page if the new role doesn't have access
-    React.useEffect(() => {
-        const availablePages = navItems.filter(item => item.roles.includes(role)).map(item => item.label);
-        if (!availablePages.includes(activePage)) {
+    // --- MODIFIED FILTERING LOGIC ---
+    // This now correctly implements the "Admin sees all" rule.
+    const accessibleNavItems = allNavItems.filter(
+        item => role === ROLES.ADMIN || item.roles.includes(role)
+    );
+
+    useEffect(() => {
+        const isPageAccessible = accessibleNavItems.some(item => item.label === activePage);
+        if (!isPageAccessible) {
             setActivePage('Dashboard');
         }
-    }, [role, activePage]);
+    }, [role, activePage, accessibleNavItems]);
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
+    const renderPageContent = () => {
+        switch (activePage) {
+            case 'Dashboard':
+                return (
+                    <div>
+                        <h2 className="text-2xl font-bold mb-4">Welcome, {user?.username || 'User'}!</h2>
+                        <p className="text-slate-600">Your current role is <strong>{role}</strong>. Select an item from the sidebar to get started.</p>
+                    </div>
+                );
+            
+            case 'Manage Users':
+                if (role === ROLES.ADMIN) {
+                    return <ManageUsersPage />;
+                } else {
+                    return <p className="text-red-500 font-semibold">Access Denied. You do not have permission to view this page.</p>;
+                }
+            
+            case 'Expenses':
+                if (role === ROLES.ADMIN || role === ROLES.MANAGER || role === ROLES.ACCOUNTANT) {
+                    return <ExpenseTracker/>
+                } else {
+                    return <p className="text-red-500 font-semibold">Access Denied. You do not have permission to view this page.</p>;
+                };
+            
+            default:
+                return <p>Content for the {activePage} page goes here.</p>;
+        }
+    };
+    
+    if (!user) {
+        return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    }
 
     return (
-        <div className="flex min-h-screen ">
+        <div className="flex min-h-screen">
             <Sidebar 
-                role={role} 
+                user={user}
+                navItems={accessibleNavItems} 
                 isSidebarOpen={isSidebarOpen} 
                 setSidebarOpen={setSidebarOpen}
                 activePage={activePage}
@@ -55,38 +112,24 @@ export default function DashboardLayout() {
                         {isSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
                     </button>
                     <h1 className="text-xl font-semibold text-slate-800">{activePage}</h1>
-                    
-                    <div className="relative">
-                        <select 
-                            value={role} 
-                            onChange={(e) => setRole(e.target.value)}
-                            className="appearance-none bg-slate-200 text-slate-700 font-semibold py-2 pl-4 pr-8 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        >
-                            <option value={ROLES.ADMIN}>Admin</option>
-                            <option value={ROLES.FINANCE_MANAGER}>Finance Manager</option>
-                            <option value={ROLES.ACCOUNTANT}>Accountant</option>
-                        </select>
-                        <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
-                    </div>
+                   <button onClick={handleLogout} className="flex items-center space-x-2 text-red-500 hover:text-red-700 font-semibold transition-colors duration-200">
+                        <FiLogOut size={20} />
+                        <span className="hidden sm:inline">Logout</span>
+                    </button>
                 </header>
 
-                <main className="flex-1 p-6 ">
+                <main className="flex-1 p-6">
                     <motion.div
-                        key={activePage} // Re-trigger animation on page change
+                        key={activePage}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                         className="container mx-auto"
                     >
-                        <h2 className="text-2xl font-bold mb-4">Welcome to the {activePage} Page</h2>
-                        <div className="bg-white p-8 rounded-xl shadow-md">
-                            <p className="text-slate-600">
-                                Content for the {activePage} page goes here. This area will update when you select a different item from the sidebar. Your current role is <strong>{role}</strong>.
-                            </p>
+                        <div className="bg-white p-8 rounded-xl shadow-md min-h-[300px]">
+                           {renderPageContent()}
                         </div>
                     </motion.div>
-
-                    <ManageUsersPage/>
                 </main>
             </div>
         </div>

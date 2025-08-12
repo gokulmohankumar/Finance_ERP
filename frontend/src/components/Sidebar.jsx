@@ -1,17 +1,11 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    FiHome, FiUsers, FiBriefcase, FiFileText, FiDollarSign, 
-    FiTrendingUp, FiSettings, FiLogOut
-} from 'react-icons/fi';
+import { FiSettings, FiLogOut } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthProvider';
 
-// --- Constants and SVG Icons (could be in a separate config file) ---
-
-const ROLES = {
-    ADMIN: 'Admin',
-    FINANCE_MANAGER: 'Finance Manager',
-    ACCOUNTANT: 'Accountant',
-};
+// --- 1. ADD SVG ICON COMPONENTS ---
+// These are simple components that render your custom profile pictures.
 
 const AdminIcon = () => (
     <svg viewBox="0 0 100 100" className="w-full h-full">
@@ -37,76 +31,90 @@ const AccountantIcon = () => (
     </svg>
 );
 
+// --- 2. ADD ROLE MAPPING OBJECT ---
+// This object connects the role string to the correct icon component.
 const USER_PROFILES = {
-    [ROLES.ADMIN]: { name: 'Admin User', icon: <AdminIcon /> },
-    [ROLES.FINANCE_MANAGER]: { name: 'Manager User', icon: <ManagerIcon /> },
-    [ROLES.ACCOUNTANT]: { name: 'Accountant User', icon: <AccountantIcon /> },
+    'Admin': { icon: <AdminIcon /> },
+    'manager': { icon: <ManagerIcon /> },
+    'accountant': { icon: <AccountantIcon /> },
 };
 
-const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: FiHome, roles: [ROLES.ADMIN, ROLES.FINANCE_MANAGER, ROLES.ACCOUNTANT] },
-    { id: 'users', label: 'Manage Users', icon: FiUsers, roles: [ROLES.ADMIN] },
-    { id: 'customers', label: 'Customers/Vendors', icon: FiBriefcase, roles: [ROLES.ADMIN, ROLES.FINANCE_MANAGER, ROLES.ACCOUNTANT] },
-    { id: 'invoices', label: 'Invoices', icon: FiFileText, roles: [ROLES.ADMIN, ROLES.FINANCE_MANAGER, ROLES.ACCOUNTANT] },
-    { id: 'payments', label: 'Payments', icon: FiDollarSign, roles: [ROLES.ADMIN, ROLES.FINANCE_MANAGER, ROLES.ACCOUNTANT] },
-    { id: 'expenses', label: 'Expenses', icon: FiTrendingUp, roles: [ROLES.ADMIN, ROLES.FINANCE_MANAGER] },
-    { id: 'reports', label: 'Reports', icon: FiTrendingUp, roles: [ROLES.ADMIN, ROLES.FINANCE_MANAGER] },
-];
 
-// --- Sidebar Component ---
-export default function Sidebar({ role, isSidebarOpen, setSidebarOpen, activePage, setActivePage }) {
-    const userProfile = USER_PROFILES[role];
-    const filteredNavItems = navItems.filter(item => item.roles.includes(role));
+export default function Sidebar({ user, navItems, isSidebarOpen, setSidebarOpen, activePage, setActivePage }) {
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    // Safely get the profile icon, with a fallback for unknown roles
+    const userProfile = USER_PROFILES[user?.role] || { icon: <FiSettings /> };
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
 
     return (
         <>
             <AnimatePresence>
                 {isSidebarOpen && (
-                     <motion.aside
+                    <motion.aside
                         initial={{ x: '-100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '-100%' }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                         className="fixed top-0 left-0 h-screen w-64 bg-slate-800 text-white flex flex-col z-50 md:sticky md:translate-x-0"
                     >
+                        {/* Header Section */}
                         <div className="p-6 flex flex-col items-center border-b border-slate-700 flex-shrink-0">
-                             <div className="text-2xl font-bold text-white mb-4">
+                            <div className="text-2xl font-bold text-white mb-4">
                                 Financier<span className="text-emerald-400">ERP</span>
                             </div>
-                            <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-br from-emerald-400 to-sky-500 mb-2">
+
+                            {/* --- 3. ADD JSX TO RENDER THE PROFILE PICTURE --- */}
+                            <div className="w-20 h-20 rounded-full p-1 bg-gradient-to-br from-emerald-400 to-sky-500 mb-2">
                                 {userProfile.icon}
                             </div>
-                            <h3 className="font-semibold text-lg">{userProfile.name}</h3>
-                            <p className="text-sm text-slate-400">{role}</p>
+
+                            {user && (
+                                <>
+                                    <h3 className="font-semibold text-lg">{user.username}</h3>
+                                    <p className="text-sm text-slate-400">{user.role}</p>
+                                </>
+                            )}
                         </div>
 
-                        <nav className="flex-1 px-4 py-6 space-y-2">
-                            {filteredNavItems.map(item => (
-                                <a
-                                    key={item.id}
-                                    href="#"
-                                    onClick={() => {
-                                        setActivePage(item.label);
-                                        if (window.innerWidth < 768) setSidebarOpen(false);
-                                    }}
-                                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
-                                        activePage === item.label
-                                        ? 'bg-emerald-500 text-white shadow-lg' 
-                                        : 'text-slate-300 hover:bg-slate-700'
-                                    }`}
-                                >
-                                    <item.icon className="w-5 h-5" />
-                                    <span>{item.label}</span>
-                                </a>
-                            ))}
+                        {/* Navigation Section - This part is already correct */}
+                        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                            {navItems.map(item => {
+                                const IconComponent = item.icon;
+                                return (
+                                    <a
+                                        key={item.id}
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setActivePage(item.label);
+                                            if (window.innerWidth < 768) setSidebarOpen(false);
+                                        }}
+                                        className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
+                                            activePage === item.label
+                                                ? 'bg-emerald-500 text-white shadow-lg' 
+                                                : 'text-slate-300 hover:bg-slate-700'
+                                        }`}
+                                    >
+                                        {IconComponent && <IconComponent className="w-5 h-5 flex-shrink-0" />}
+                                        <span>{item.label}</span>
+                                    </a>
+                                );
+                            })}
                         </nav>
 
+                        {/* Footer Section - This part is already correct */}
                         <div className="p-4 border-t border-slate-700 mt-auto flex-shrink-0">
-                             <a href="#" className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700">
+                            <a href="#" className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700">
                                 <FiSettings className="w-5 h-5" />
                                 <span>Settings</span>
                             </a>
-                             <a href="#" className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700">
+                            <a href="#" onClick={handleLogout} className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700">
                                 <FiLogOut className="w-5 h-5" />
                                 <span>Logout</span>
                             </a>
@@ -114,7 +122,8 @@ export default function Sidebar({ role, isSidebarOpen, setSidebarOpen, activePag
                     </motion.aside>
                 )}
             </AnimatePresence>
-             {isSidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/50 z-40 md:hidden"></div>}
+            {/* Mobile overlay */}
+            {isSidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/50 z-40 md:hidden"></div>}
         </>
     );
-};
+}
