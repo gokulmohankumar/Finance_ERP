@@ -10,5 +10,4 @@ public class ErpFinanceApplication {
 
 		SpringApplication.run(ErpFinanceApplication.class, args);
 	}
-
 }

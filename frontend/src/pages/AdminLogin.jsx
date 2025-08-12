@@ -1,14 +1,14 @@
 // src/App.js
 
-import React, { useState } from 'react';
-import { FiEye, FiEyeOff } from 'react-icons/fi'; // Icon for password visibility
 import { motion } from 'framer-motion'; // For animations
+import { useState } from 'react';
+import { FiEye, FiEyeOff } from 'react-icons/fi'; // Icon for password visibility
 import loginimg from '../assets/bg_home.jpg';
 
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 // IMPORTANT: Make sure to place your illustration in the src/assets folder
 // and update the import path if necessary.
-import axios from 'axios'
+import axios from 'axios';
 
 // A custom reusable component for the animated toggle switch
 const ToggleSwitch = ({ checked, onChange }) => {
@@ -40,13 +40,15 @@ const ToggleSwitch = ({ checked, onChange }) => {
   );
 };
 
+
 function LoginPage() {
   // State management for form inputs and toggles
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
+  
+  const navigate=useNavigate()
   // Animation variants for Framer Motion
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -79,6 +81,8 @@ function LoginPage() {
         });
         console.log(response.data);
         alert('Login Successful!');
+        navigate('/dashboard')
+        
     }catch(error){
         alert("Login Failed! Please check your credentials.");
         console.error('Login error:', error);
