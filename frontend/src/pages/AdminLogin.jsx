@@ -1,14 +1,13 @@
 // src/App.js
 
-import { motion } from 'framer-motion'; // For animations
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { FiEye, FiEyeOff } from 'react-icons/fi'; // Icon for password visibility
+import { motion } from 'framer-motion'; // For animations
 import loginimg from '../assets/bg_home.jpg';
 
-import {useNavigate} from 'react-router-dom'
-// IMPORTANT: Make sure to place your illustration in the src/assets folder
-// and update the import path if necessary.
-import axios from 'axios'
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useAuth } from '../context/AuthProvider'; // <-- 1. ADD THIS IMPORT
 
 // A custom reusable component for the animated toggle switch
 const ToggleSwitch = ({ checked, onChange }) => {
@@ -40,13 +39,17 @@ const ToggleSwitch = ({ checked, onChange }) => {
   );
 };
 
-
 function LoginPage() {
   // State management for form inputs and toggles
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(''); // <-- 2. ADD STATE FOR ERROR HANDLING
+
+  // --- Hooks for navigation and authentication ---
+  const navigate = useNavigate(); // <-- 3. USE THE HOOK
+  const { login } = useAuth();    // <-- 4. GET LOGIN FUNCTION FROM AUTH CONTEXT
 
   // Animation variants for Framer Motion
   const containerVariants = {
@@ -76,15 +79,24 @@ function LoginPage() {
     try {
       console.log("Attempting to log in with:", email);
       
-        const response = await axios.post('http://localhost:8080/api/users/login',{
-            email,
-            password,
-        });
-        console.log(response.data);
-        alert('Login Successful!');
-    }catch(error){
-        alert("Login Failed! Please check your credentials.");
-        console.error('Login error:', error);
+      const response = await axios.post('http://localhost:8080/api/users/login', {
+        email,
+        password,
+      });
+      
+      // The API call was successful. Let's log the data we received.
+      console.log("API Response Data:", response.data);
+
+      // --- THIS IS THE CRITICAL CORRECTION ---
+      // Pass the user OBJECT from the API response to the login function.
+      login(response.data);
+
+      // Now, redirect to the dashboard.
+      navigate('/dashboard');
+
+    } catch (err) {
+      console.error('Login error:', err);
+      setError("Login Failed! Please check your credentials.");
     }
   };
   return (

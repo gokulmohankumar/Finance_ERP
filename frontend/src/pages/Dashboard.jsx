@@ -16,7 +16,8 @@ import { useAuth } from '../context/AuthProvider';
 import Sidebar from '../components/Sidebar';
 import ManageUsersPage from '../components/ManageUser';
 import ExpenseTracker from './ExpenseTracker';
-
+import VendorPage from './VendorPage';
+import Analytics from './Analytics';
 // Define roles to EXACTLY match the strings from your backend API
 const ROLES = {
   ADMIN: 'admin',
@@ -26,7 +27,7 @@ const ROLES = {
 
 // This list defines all possible navigation items and their required roles
 const allNavItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: FiHome, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.ACCOUNTANT] },
+    { id: 'dashboard', label: 'Dashboard', icon: FiHome, roles: [ROLES.ADMIN, ROLES.MANAGER] },
     { id: 'users', label: 'Manage Users', icon: FiUsers, roles: [ROLES.ADMIN] },
     { id: 'customers', label: 'Customers/Vendors', icon: FiBriefcase, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.ACCOUNTANT] },
     { id: 'invoices', label: 'Invoices', icon: FiFileText, roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.ACCOUNTANT] },
@@ -66,10 +67,10 @@ export default function DashboardLayout() {
         switch (activePage) {
             case 'Dashboard':
                 return (
-                    <div>
+                    <>
                         <h2 className="text-2xl font-bold mb-4">Welcome, {user?.username || 'User'}!</h2>
-                        <p className="text-slate-600">Your current role is <strong>{role}</strong>. Select an item from the sidebar to get started.</p>
-                    </div>
+                        <Analytics/>
+                    </>
                 );
             
             case 'Manage Users':
@@ -82,6 +83,12 @@ export default function DashboardLayout() {
             case 'Expenses':
                 if (role === ROLES.ADMIN || role === ROLES.MANAGER || role === ROLES.ACCOUNTANT) {
                     return <ExpenseTracker/>
+                } else {
+                    return <p className="text-red-500 font-semibold">Access Denied. You do not have permission to view this page.</p>;
+                };
+             case 'Customers/Vendors':
+                if (role === ROLES.ADMIN || role === ROLES.MANAGER || role === ROLES.ACCOUNTANT) {
+                    return <VendorPage/>
                 } else {
                     return <p className="text-red-500 font-semibold">Access Denied. You do not have permission to view this page.</p>;
                 };
