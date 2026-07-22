@@ -14,3 +14,27 @@ The project follows a modern full-stack architecture with a **Spring Boot** back
 - 💰 Financial record management
 - 🔄 RESTful API integration
 - 📱 Responsive user interface
+
+---
+
+## 🛠️ Tech Stack
+
+### Backend
+- Java
+- Spring Boot
+- Spring Data JPA
+- Hibernate
+- REST APIs
+
+### Frontend
+- React.js
+- Tailwind CSS
+- Axios
+
+### Database
+- MySQL
+
+### Tools
+- Git & GitHub
+- Maven
+- Postman
